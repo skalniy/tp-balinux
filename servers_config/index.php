@@ -32,188 +32,193 @@
     </table>
   </div>
   
+  <?php 
+    function getClassByValue($val) {
+      if ($val >= 90) return "crit";
+      else if ($val >= 80) return "warn";
+      else return "";
+    }
+  ?>
+  
   <div>
-    <?php
-      $cores = exec('cat /proc/cpuinfo | awk -F ":" \'/cpu cores/{print $2}\'');
-      function getClassByValue($val) {
-        if ($val >= 90) return "crit";
-        else if ($val >= 80) return "warn";
-        else return "";
-      }
+    <?php  
+      if($f = fopen("/var/log/balinux/loadavg", "r")) {
+        $cores = exec('cat /proc/cpuinfo | awk -F ":" \'/cpu cores/{print $2}\'');
     ?>
-
-    <table>
-      <caption>Средняя загрузка</caption>
-      <?php if($f = fopen("/var/log/balinux/loadavg", "r")) { ?>
-      <tr>
-        <th>1 min</th><th>5 min</th><th>15 min</th>
-      </tr>
-      <tr><?php foreach (fscanf($f, "%s\t%s\t%s\n") as $field) { ?>
-        <td class="<?= getClassByValue($field/$cores * 100) ?>"><?= $field ?></td>
-      <?php } fclose($f); } ?></tr>
-    </table>
-
-    <table>
-      <caption>Средняя загрузка CPU</caption>
-      <?php if($f = fopen("/var/log/balinux/mpstat", "r")) { ?>
-      <tr>
-        <th>%us(%us+%ni)</th><th>%sys</th>
-        <th>%id</th><th>%iowait</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php list ($f1, $f2, $f3, $f4) = fscanf($f, "%f\t%f\t%f\t%f\n"); ?>
-          <td class=<?= getClassByValue($field) ?>><?= $f1 ?></td>
-          <td class=<?= getClassByValue($field) ?>><?= $f2 ?></td>
-          <td class=<?= getClassByValue($field) ?>><?= $f3 ?></td>
-          <td class=<?= getClassByValue($field) ?>><?= $f4 ?></td>
+      <table>
+        <caption>Средняя загрузка</caption>
+        <tr>
+          <th>1 min</th><th>5 min</th><th>15 min</th>
         </tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
-  </div>
-
-  <div>
-    <table>
-      <caption>Загрузка дисков</caption>
-      <?php if($f = fopen("/var/log/balinux/iostat", "r")) { ?>
-      <tr>
-        <th>Device</th>
-        <th>r/s</th><th>w/s</th><th>rkB/s</th>
-        <th>wkB/s</th><th>await</th><th>%util</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php list ($f1, $f2, $f3, $f4, $f5, $f6, $f7) = fscanf($f, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n"); ?>
-          <td><?= $f1 ?></td>
-          <td><?= $f2 ?></td>
-          <td><?= $f3 ?></td>
-          <td><?= $f4 ?></td>
-          <td><?= $f5 ?></td>
-          <td><?= $f6 ?></td>
-          <td class=<?= getClassByValue($f7) ?>><?= $f7 ?></td>
-        </tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
-
-    <table>
-      <caption>Информация о файловых системах</caption>
-      <?php if($f = fopen("/var/log/balinux/df", "r")) { ?>
-      <tr>
-        <th>Filesystem</th><th>Avail%</th>
-        <th>IAvail%</th><th>Mounted on</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php list ($f1, $f2, $f3, $f4) = fscanf($f, "%s\t%s\t%s\t%s\n"); ?>
-          <td><?= $f1 ?></td>
-          <td class=<?= getClassByValue(100-$f2) ?>><?= $f2 ?></td>
-          <td class=<?= getClassByValue(100-$f3) ?>><?= $f3 ?></td>
-          <td><?= $f4 ?></td>
-        </tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
-  </div>
-
-  <div>
-    <table>
-      <caption>Top talkers по протоколам</caption>
-      <?php if ($f = fopen("/var/log/balinux/proto.log", "r")) { ?>
-      <tr>
-        <th>protocol</th><th>bytes</th><th>%</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
         <tr><?php foreach (fscanf($f, "%s\t%s\t%s\n") as $field) { ?>
-          <td><?= $field ?></td>
-        <?php } ?></tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
+          <td class="<?= getClassByValue($field/$cores * 100) ?>"><?= $field ?></td>
+        <?php } ?>
+        </tr>
+      </table>
+    <?php fclose($f); } ?>
 
-    <table>
-      <caption>Top talkers по пакетам</caption>
-      <?php if($f = fopen("/var/log/balinux/pps.log", "r")) { ?>
-      <tr>
-        <th>source</th><th>destination</th>
-        <th>protocol</th><th>pps</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\n") as $field) { ?>
-          <td><?= $field ?></td>
-        <?php } ?></tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
+    <?php if($f = fopen("/var/log/balinux/mpstat", "r")) { ?>
+      <table>
+        <caption>Средняя загрузка CPU</caption>    
+        <tr>
+          <th>%us(%us+%ni)</th><th>%sys</th>
+          <th>%id</th><th>%iowait</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php list ($f1, $f2, $f3, $f4) = fscanf($f, "%f\t%f\t%f\t%f\n"); ?>
+            <td class=<?= getClassByValue($field) ?>><?= $f1 ?></td>
+            <td class=<?= getClassByValue($field) ?>><?= $f2 ?></td>
+            <td class=<?= getClassByValue($field) ?>><?= $f3 ?></td>
+            <td class=<?= getClassByValue($field) ?>><?= $f4 ?></td>
+          </tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
+  </div>
 
-    <table>
-      <caption>Top talkers по трафику</caption>
-      <?php  if($f = fopen("/var/log/balinux/bps.log", "r")) { ?>
-      <tr>
-        <th>source</th><th>destination</th>
-        <th>protocol</th><th>bps</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\n") as $field) { ?>
-          <td><?= $field ?></td>
-        <?php } ?></tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
+  <div>
+    <?php if($f = fopen("/var/log/balinux/iostat", "r")) { ?>
+      <table>
+        <caption>Загрузка дисков</caption> 
+        <tr>
+          <th>Device</th>
+          <th>r/s</th><th>w/s</th><th>rkB/s</th>
+          <th>wkB/s</th><th>await</th><th>%util</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php list ($f1, $f2, $f3, $f4, $f5, $f6, $f7) = fscanf($f, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n"); ?>
+            <td><?= $f1 ?></td>
+            <td><?= $f2 ?></td>
+            <td><?= $f3 ?></td>
+            <td><?= $f4 ?></td>
+            <td><?= $f5 ?></td>
+            <td><?= $f6 ?></td>
+            <td class=<?= getClassByValue($f7) ?>><?= $f7 ?></td>
+          </tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
+
+    <?php if($f = fopen("/var/log/balinux/df", "r")) { ?>
+      <table>
+        <caption>Информация о файловых системах</caption> 
+        <tr>
+          <th>Filesystem</th><th>Avail%</th>
+          <th>IAvail%</th><th>Mounted on</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php list ($f1, $f2, $f3, $f4) = fscanf($f, "%s\t%s\t%s\t%s\n"); ?>
+            <td><?= $f1 ?></td>
+            <td class=<?= getClassByValue(100-$f2) ?>><?= $f2 ?></td>
+            <td class=<?= getClassByValue(100-$f3) ?>><?= $f3 ?></td>
+            <td><?= $f4 ?></td>
+          </tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
+  </div>
+
+  <div>
+    <?php if ($f = fopen("/var/log/balinux/proto.log", "r")) { ?>
+      <table>
+        <caption>Top talkers по протоколам</caption>
+        <tr>
+          <th>protocol</th><th>bytes</th><th>%</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php foreach (fscanf($f, "%s\t%s\t%s\n") as $field) { ?>
+            <td><?= $field ?></td>
+          <?php } ?></tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
+
+    <?php if($f = fopen("/var/log/balinux/pps.log", "r")) { ?>
+      <table>
+        <caption>Top talkers по пакетам</caption>
+        <tr>
+          <th>source</th><th>destination</th>
+          <th>protocol</th><th>pps</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\n") as $field) { ?>
+            <td><?= $field ?></td>
+          <?php } ?></tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
+
+    <?php  if($f = fopen("/var/log/balinux/bps.log", "r")) { ?>
+      <table>
+        <caption>Top talkers по трафику</caption>
+
+        <tr>
+          <th>source</th><th>destination</th>
+          <th>protocol</th><th>bps</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\n") as $field) { ?>
+            <td><?= $field ?></td>
+          <?php } ?></tr>
+        <?php } ?>   
+      </table>
+    <?php fclose($f); } ?>
   </div>
   
   <div>
-    <table>
-      <caption>Слущающие сокеты</caption>
-      <?php if ($f = fopen("/var/log/balinux/sockl", "r")) { ?>
-      <tr>
-        <th>TCP</th>
-        <th>UDP</th>
-      </tr>
-      <tr><?php while (!feof($f)) { ?>
-        <td><?= fgets($f) ?></td>
-      <?php } ?>
-      </tr>
-      <?php fclose($f); } ?>
-    </table>
+    <?php if ($f = fopen("/var/log/balinux/sockl", "r")) { ?>
+      <table>
+        <caption>Слущающие сокеты</caption>
+        <tr>
+          <th>TCP</th>
+          <th>UDP</th>
+        </tr>
+        <tr><?php while (!feof($f)) { ?>
+          <td><?= fgets($f) ?></td>
+        <?php } ?>
+        </tr> 
+      </table>
+    <?php fclose($f); } ?>
 
-    <table>
-      <caption>TCP сокеты</caption>
-      <?php if ($f = fopen("/var/log/balinux/sockstat", "r")) { ?>
-      <tr>
-        <th>Состояние</th>
-        <th>Количество</th>
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php foreach (fscanf($f, "%s\t%s\n") as $field) { ?>
-          <td><?= $field ?></td>
-        <?php } ?></tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
+    <?php if ($f = fopen("/var/log/balinux/sockstat", "r")) { ?>
+      <table>
+        <caption>TCP сокеты</caption>
+        <tr>
+          <th>Состояние</th>
+          <th>Количество</th>
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php foreach (fscanf($f, "%s\t%s\n") as $field) { ?>
+            <td><?= $field ?></td>
+          <?php } ?></tr>
+        <?php } ?> 
+      </table>
+    <?php fclose($f); } ?>
   </div>
   
   <div>
-    <table>
-      <caption>Загрузка сети</caption>
-      <?php if($f = fopen("/var/log/balinux/netload", "r")) { ?>
-      <tr>
-        <th>Interface</th>
-        <th colspan="8">Received</th>
-        <th colspan="8">Transmitted</th>
-      </tr>
-      <tr>
-        <th></th>
-        <th>bytes</th><th>packets</th><th>errs</th><th>drop</th>
-        <th>fifo</th><th>frame</th><th>compressed</th><th>multicast</th>
-        <th>bytes</th><th>packets</th><th>errs</th><th>drop</th>
-        <th>fifo</th><th>colls</th><th>carriers</th><th>compressed</th> 
-      </tr>
-      <?php while (!feof($f)) { ?>
-        <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n") as $field) { ?>
-          <td><?= $field ?></td>
-        <?php } ?></tr>
-      <?php } ?>
-      <?php fclose($f); } ?>
-    </table>
+    <?php if($f = fopen("/var/log/balinux/netload", "r")) { ?>
+      <table>
+        <caption>Загрузка сети</caption>
+        <tr>
+          <th>Interface</th>
+          <th colspan="8">Received</th>
+          <th colspan="8">Transmitted</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>bytes</th><th>packets</th><th>errs</th><th>drop</th>
+          <th>fifo</th><th>frame</th><th>compressed</th><th>multicast</th>
+          <th>bytes</th><th>packets</th><th>errs</th><th>drop</th>
+          <th>fifo</th><th>colls</th><th>carriers</th><th>compressed</th> 
+        </tr>
+        <?php while (!feof($f)) { ?>
+          <tr><?php foreach (fscanf($f, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n") as $field) { ?>
+            <td><?= $field ?></td>
+          <?php } ?></tr>
+        <?php } ?>
+      </table>
+    <?php fclose($f); } ?>
   </div>
 </body>
 </html>

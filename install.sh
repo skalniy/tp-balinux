@@ -1,6 +1,6 @@
 # !/bin/bash
 
-apt-get install sysstat -y
+apt-get install original-awk sed tcpdump sysstat -y
 
 useradd balinux
 cp monitoring/* /usr/local/sbin/
