@@ -1,0 +1,8 @@
+* * * * * balinux /usr/local/sbin/loadavg.awk /proc/loadavg
+* * * * * balinux /usr/local/sbin/iostat.sh
+* * * * * balinux /usr/local/sbin/netload.sh
+* * * * * balinux /usr/local/sbin/sockl.sh 
+* * * * * balinux /usr/local/sbin/sockstat.sh 
+* * * * * balinux /usr/local/sbin/mpstat.sh
+* * * * * balinux /usr/local/sbin/df.sh
+* * * * * root /usr/local/sbin/tcpdump.sh
